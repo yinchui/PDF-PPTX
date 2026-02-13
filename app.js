@@ -248,8 +248,17 @@ class PDFExtractor {
 }
 
 async function generatePPTX(pageDataList) {
+    // 调试：打印输入数据
+    console.log('pageDataList:', JSON.stringify(pageDataList, (key, val) => {
+        if (typeof val === 'function') return '[Function]';
+        return val;
+    }, 2));
+
     const pptx = new PptxGenJS();
-    pptx.layout = 'LAYOUT_16x9';
+
+    // 测试：先创建一个最简单的slide
+    const testSlide = pptx.addSlide();
+    testSlide.addText('Test', { x: 1, y: 1, fontSize: 24, fontFace: 'Arial', color: '363636' });
 
     // PPTX的尺寸（英寸）
     const slideWidth = 10;

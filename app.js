@@ -264,9 +264,18 @@ async function generatePPTX(pageDataList) {
         }
 
         // 按Y坐标排序文字
+        // 确保 texts 是有效数组
+        if (!pageData.texts || !Array.isArray(pageData.texts) || pageData.texts.length === 0) {
+            continue;
+        }
+
         const sortedTexts = [...pageData.texts].sort((a, b) => b.y - a.y);
 
         for (const text of sortedTexts) {
+            // 跳过无效的文字
+            if (!text.text || typeof text.text !== 'string') continue;
+            if (text.x < 0 || text.y < 0) continue;
+
             // 坐标转换：PDF坐标 -> PPTX坐标
             // PDF: 左下角为原点，向上为正
             // PPTX: 左上角为原点，向下为正
@@ -276,7 +285,11 @@ async function generatePPTX(pageDataList) {
             const fontSize = Math.max(Number(text.fontSize) * 0.75, 8);
             const w = text.width ? (Number(text.width) / Number(pageData.width) * slideWidth) : 4;
 
-            slide.addText(String(text.text), {
+            // 确保文字内容是有效字符串
+            const textContent = String(text.text).trim();
+            if (!textContent) continue;
+
+            slide.addText(textContent, {
                 x: Math.max(0.1, x),
                 y: Math.max(0.1, y),
                 w: Math.min(w, slideWidth - x - 0.1),

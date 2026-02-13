@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF转PPTX</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>PDF转PPTX</h1>
+            <p>将PDF格式的PPT转换为可编辑的PPTX文件</p>
+        </header>
+
+        <main>
+            <div id="upload-area" class="upload-area">
+                <div class="upload-content">
+                    <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="17 8 12 3 7 8"></polyline>
+                        <line x1="12" y1="3" x2="12" y2="15"></line>
+                    </svg>
+                    <p>拖拽PDF文件到这里，或点击选择</p>
+                    <input type="file" id="file-input" accept=".pdf" hidden>
+                    <button class="btn-primary" onclick="document.getElementById('file-input').click()">选择文件</button>
+                </div>
+            </div>
+
+            <div id="preview-area" class="preview-area hidden">
+                <h2>预览</h2>
+                <div id="pages-container" class="pages-container"></div>
+
+                <div class="action-bar">
+                    <button id="convert-btn" class="btn-primary">转换为PPTX</button>
+                    <div id="progress-container" class="progress-container hidden">
+                        <div id="progress-bar" class="progress-bar"></div>
+                        <span id="progress-text">0%</span>
+                    </div>
+                </div>
+
+                <div id="download-area" class="download-area hidden">
+                    <a id="download-btn" class="btn-success" download>下载PPTX</a>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <p>文件仅在浏览器中处理，不会上传到服务器</p>
+        </footer>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

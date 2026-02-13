@@ -143,14 +143,11 @@ async function convertToPptx() {
             pageDataList.push(pageData);
         }
 
-        // 生成PPTX
-        const pptxData = await generatePPTX(pageDataList);
+        // 生成PPTX (已经是Blob)
+        const pptxBlob = await generatePPTX(pageDataList);
 
         // 创建下载链接
-        const blob = new Blob([pptxData], {
-            type: 'application/vnd.openxmlformats-officedocument.presentationml.presentation'
-        });
-        const url = URL.createObjectURL(blob);
+        const url = URL.createObjectURL(pptxBlob);
 
         downloadBtn.href = url;
         downloadBtn.download = `${state.fileName}.pptx`;

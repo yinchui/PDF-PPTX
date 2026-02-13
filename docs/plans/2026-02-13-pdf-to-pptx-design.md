@@ -1,70 +1,65 @@
-# PDF转PPTX网页应用设计
+# PDF 转 PPTX 本地高精度设计（2026-02-13）
 
-## 1. 核心功能
+## 1. 设计目标
 
-用户上传PDF文件 → 浏览器解析PDF → 提取文字/图片/形状 → 生成PPTX下载
+- 文字与图片分离，文本可编辑
+- 图标尽量逐个分离，矢量优先
+- 不能矢量化时回退为独立图片并可追踪
 
-## 2. 技术架构
+## 2. 总体架构
 
-### 技术栈
-- 单页应用（SPA）
-- **pdf.js** - PDF解析和渲染
-- **pptxgenjs** - 客户端生成PPTX文件
-- **Tailwind CSS** - 样式
+### 前端
+- 保留原有三模式
+- 新增 `local_high_precision`
+- 负责上传、轮询、下载、展示报告摘要
 
-### 文件处理流程
-```
-用户上传PDF → pdf.js解析 → 提取页面元素 → pptxgenjs生成PPTX → 文件下载
-```
+### 本地服务（FastAPI）
+- Job API + 状态管理
+- 对象层提取与写回
+- 产出 `output.pptx`、`report.json`、`page_graph.json`
 
-## 3. 页面结构
+## 3. 核心数据模型
 
-```
-+-------------------------------------+
-|           Header (Logo)              |
-+-------------------------------------+
-|                                     |
-|         上传区域 (拖拽+点击)         |
-|                                     |
-+-------------------------------------+
-|         预览区域 (PDF页面列表)       |
-|         [页1] [页2] [页3] ...       |
-+-------------------------------------+
-|    [转换按钮]          进度条        |
-+-------------------------------------+
-|           下载按钮                   |
-+-------------------------------------+
-```
+- `ExtractedText`: `text, bbox_pt, font_name, font_size_pt, color`
+- `ExtractedImage`: `id, bbox_pt, mime, bytes`
+- `VectorPath`: `id, bbox_pt, stroke, fill, width, items`
+- `IconCandidate`: `id, bbox_pt, paths[], classify_result`
+- `ConversionReport`:
+  - `vector_icons_ok`
+  - `vector_icons_fallback`
+  - `text_count`
+  - `image_count`
+  - `warnings`
+  - `icons[]`
 
-## 4. 关键模块
+## 4. 图标分离策略
 
-| 模块 | 功能 |
-|------|------|
-| PDFUploader | 处理文件上传，支持拖拽和点击 |
-| PDFRenderer | 渲染PDF页面为预览图 |
-| PDFExtractor | 提取每页的文字、坐标、图片 |
-| PPTXGenerator | 将提取内容转换为PPTX |
-| DownloadManager | 处理文件下载 |
+1. 来源：`page.get_drawings()`  
+2. 过滤：
+- 面积占比 > 35% 的路径当背景过滤
+- 聚类后尺寸必须在 8pt~220pt
+3. 聚类：
+- bbox 邻近阈值 6pt，连通域聚类
+4. 写回：
+- primitive 优先（矩形等）
+- 复杂路径离散化后 freeform
+- 异常时回退 clip 栅格图
 
-## 5. 元素提取策略
+## 5. 坐标映射
 
-| 元素 | 提取方式 |
-|------|----------|
-| 文字 | pdf.js getTextContent() 获取文本和位置 |
-| 图片 | pdf.js getObject() 提取图像流 |
-| 背景色/矩形 | 分析页面渲染结果，检测色块 |
+- 输入坐标：PDF pt（PyMuPDF 页面坐标）
+- 输出坐标：PPT inch（13.333 x 7.5）
+- 统一使用 bbox 比例映射，避免局部硬编码
 
-## 6. 错误处理
+## 6. 可观测性与容错
 
-- **非PDF文件** → 提示"请上传PDF文件"
-- **PDF解析失败** → 提示"文件损坏或格式不支持"
-- **生成失败** → 提示"转换失败，请重试"
-- **文件过大** → 提示"文件过大，建议分页处理"
+- Job 状态：`queued/running/done/failed`
+- 进度与阶段文本实时返回
+- 错误信息和 traceback 存在 job 状态
+- 报告记录每个 icon 结果，不允许静默失败
 
-## 7. 验收标准
+## 7. 已知限制
 
-- [ ] 可以上传PDF文件并显示预览
-- [ ] 可以将PDF转换为PPTX并下载
-- [ ] 转换后的PPTX可以用PowerPoint/WPS打开
-- [ ] 文字基本可编辑
-- [ ] 基本的排版能保留
+- 扫描件/扁平化 PDF 的图标矢量化能力有限
+- 复杂渐变、遮罩、裁剪路径多回退为图片
+- “矢量可编辑率”依赖源 PDF 的对象质量

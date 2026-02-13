@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
@@ -13,6 +13,8 @@
             <p>将PDF格式的PPT转换为可编辑的PPTX文件</p>
         </header>
 
+        <div id="message-area" class="message hidden" role="status" aria-live="polite"></div>
+
         <main>
             <div id="upload-area" class="upload-area">
                 <div class="upload-content">
@@ -22,21 +24,40 @@
                         <line x1="12" y1="3" x2="12" y2="15"></line>
                     </svg>
                     <p>拖拽PDF文件到这里，或点击选择</p>
-                    <input type="file" id="file-input" accept=".pdf" hidden>
-                    <button class="btn-primary" onclick="document.getElementById('file-input').click()">选择文件</button>
+                    <input type="file" id="file-input" accept="application/pdf,.pdf" hidden>
+                    <button id="choose-file-btn" class="btn-primary" type="button">选择文件</button>
                 </div>
             </div>
 
             <div id="preview-area" class="preview-area hidden">
-                <h2>预览</h2>
+                <div class="section-head">
+                    <h2>预览</h2>
+                    <div class="mode-tools">
+                        <label for="mode-select">转换模式</label>
+                        <select id="mode-select">
+                            <option value="fidelity" selected>保真优先（推荐）</option>
+                            <option value="balanced">平衡模式</option>
+                            <option value="editable">可编辑优先</option>
+                            <option value="local_high_precision">高精度分离（本地服务）</option>
+                        </select>
+                        <label class="checkbox-inline" for="debug-toggle">
+                            <input type="checkbox" id="debug-toggle">
+                            调试日志
+                        </label>
+                    </div>
+                </div>
+
                 <div id="pages-container" class="pages-container"></div>
 
                 <div class="action-bar">
-                    <button id="convert-btn" class="btn-primary">转换为PPTX</button>
-                    <div id="progress-container" class="progress-container hidden">
-                        <div id="progress-bar" class="progress-bar"></div>
-                        <span id="progress-text">0%</span>
-                    </div>
+                    <button id="convert-btn" class="btn-primary" type="button" disabled>转换为PPTX</button>
+                    <button id="reset-btn" class="btn-secondary" type="button">重新选择文件</button>
+                </div>
+
+                <div id="progress-container" class="progress-container hidden">
+                    <div id="progress-bar" class="progress-bar"></div>
+                    <span id="progress-text">0%</span>
+                    <span id="progress-stage" class="progress-stage"></span>
                 </div>
 
                 <div id="download-area" class="download-area hidden">

@@ -144,7 +144,7 @@ async function convertToPptx() {
         }
 
         // 生成PPTX
-        const pptxData = generatePPTX(pageDataList);
+        const pptxData = await generatePPTX(pageDataList);
 
         // 创建下载链接
         const blob = new Blob([pptxData], {
@@ -248,7 +248,7 @@ class PDFExtractor {
     }
 }
 
-function generatePPTX(pageDataList) {
+async function generatePPTX(pageDataList) {
     const pptx = new PptxGenJS();
     pptx.layout = 'LAYOUT_16x9';
 
@@ -289,7 +289,7 @@ function generatePPTX(pageDataList) {
         }
     }
 
-    return pptx.write({ blobType: 'blob' });
+    return await pptx.write({ blobType: 'blob' });
 }
 
 function showError(message) {

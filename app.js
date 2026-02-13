@@ -196,7 +196,9 @@ class PDFExtractor {
         const texts = [];
 
         for (const item of items) {
-            if (item.str.trim()) {
+            // 确保 str 是有效的字符串
+            const text = String(item.str || '').trim();
+            if (text) {
                 // 转换坐标（PDF坐标需要转换）
                 const tx = pdfjsLib.Util.transform(
                     viewport.transform,
@@ -204,12 +206,12 @@ class PDFExtractor {
                 );
 
                 texts.push({
-                    text: item.str,
-                    x: tx[4],
-                    y: viewport.height - tx[5], // 翻转Y坐标
-                    fontSize: item.height || 12,
-                    fontName: item.fontName || 'Arial',
-                    width: item.width
+                    text: text,
+                    x: Number(tx[4]) || 0,
+                    y: viewport.height - (Number(tx[5]) || 0), // 翻转Y坐标
+                    fontSize: Number(item.height) || 12,
+                    fontName: String(item.fontName) || 'Arial',
+                    width: Number(item.width) || 0
                 });
             }
         }
@@ -269,12 +271,12 @@ async function generatePPTX(pageDataList) {
             // PDF: 左下角为原点，向上为正
             // PPTX: 左上角为原点，向下为正
 
-            const x = (text.x / pageData.width) * slideWidth;
-            const y = slideHeight - (text.y / pageData.height) * slideHeight - 0.3;
-            const fontSize = Math.max(text.fontSize * 0.75, 8);
-            const w = text.width ? (text.width / pageData.width * slideWidth) : 4;
+            const x = (Number(text.x) / Number(pageData.width)) * slideWidth;
+            const y = slideHeight - (Number(text.y) / Number(pageData.height)) * slideHeight - 0.3;
+            const fontSize = Math.max(Number(text.fontSize) * 0.75, 8);
+            const w = text.width ? (Number(text.width) / Number(pageData.width) * slideWidth) : 4;
 
-            slide.addText(text.text, {
+            slide.addText(String(text.text), {
                 x: Math.max(0.1, x),
                 y: Math.max(0.1, y),
                 w: Math.min(w, slideWidth - x - 0.1),
